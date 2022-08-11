@@ -4,4 +4,4 @@
 
 Dataset used: Coronavirus (COVID-19) Deaths - https://ourworldindata.org/covid-deaths
   * Data used is from Feb 24, 2020 to Apr 30, 2021
-  * Main data categories used: Total case, new cases, total deaths, new deaths, total vaccinations, people vaccinated, & population
+  * Main data categories used: Locations, dates, total case, new cases, total deaths, new deaths, total vaccinations, people vaccinated, & population
