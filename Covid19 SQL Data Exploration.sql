@@ -8,7 +8,7 @@
 -- Replacing blank cells in the 'continent' column with a NULL value instead
 -- Also replacing values of 0 in total_cases with a NULL value
 UPDATE..CovidDeaths
-SET continent = NULLIF(continent, ''), total_cases = NULLIF(total_cases, '0')
+SET total_cases = NULLIF(total_cases, '0'), continent = NULLIF(continent, '')
 
 
 -- **Viewing some of the columns of data sorting by Location and date**
@@ -26,7 +26,7 @@ order by 1,2
 select Location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 as DeathPercentage 
 FROM COVID19_PortfolioProject..CovidDeaths
 where location like 'United States'
-order by 1,2
+order by DeathPercentage desc
 
 -- **Looking at Total Cases vs Population in the U.S.**
 -- Shows the percentage of the population that has been diagnosed with COVID-19
@@ -38,8 +38,10 @@ order by 1,2
 
 -- **Looking at the countries that have had the highest percent of COVID-19 cases per capita**
 -- Data had "0" in some population data, needed to use the NULLIF() expression avoid "divide by zero error"
--- cast() was used because the data type was float and was displaying in scientific notation, which can make the data harder to interpret at a quick glance
-select Location, MAX(total_cases) as 'Max Total Cases', cast(Population as bigint) as Population, MAX((total_cases/nullif(population, 0)))*100 as 'Percent Cases vs Population'
+-- cast() was used because the data type was float and was displaying in scientific notation, 
+-- which can make the data harder to interpret at a quick glance
+select Location, MAX(total_cases) as 'Max Total Cases', cast(Population as bigint) as Population, 
+MAX((total_cases/nullif(population, 0)))*100 as 'Percent Cases vs Population'
 FROM COVID19_PortfolioProject..CovidDeaths
 where continent is not null
 Group by Location, population
@@ -133,7 +135,7 @@ From #PercentPopulationVaccinated
 
 
 
---Creating Views to store data for later visualizations
+--Creating Views to store data for visualizations
 
 Create View PercentPopulationVaccinated as
 Select dea.continent as Continent, dea.location as Location, dea.date as Date, cast(dea.population as bigint) as Population, cast(vac.new_vaccinations as int) as New_Vaccinations, 
@@ -152,3 +154,46 @@ select Location, MAX(total_deaths) as 'Highest Total Deaths'
 FROM COVID19_PortfolioProject..CovidDeaths
 where continent is not null
 Group by Location
+
+
+-- 1. 
+
+Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
+From COVID19_PortfolioProject..CovidDeaths
+--Where location like '%states%'
+where continent is not null 
+--Group By date
+order by 1,2
+
+
+-- 2. 
+
+Select location, SUM(cast(new_deaths as int)) as TotalDeathCount
+From COVID19_PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Where continent is null 
+and location not in ('World', 'European Union', 'International')
+Group by location
+order by TotalDeathCount desc
+
+
+
+-- 3.
+
+Select Location, Population, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/NULLIF(population,0)))*100 as PercentPopulationInfected
+From COVID19_PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Group by Location, Population
+order by PercentPopulationInfected desc
+
+
+-- 4.
+
+
+Select Location, Population,date, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/NULLIF(population,0)))*100 as PercentPopulationInfected
+From COVID19_PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Group by Location, Population, date
+order by PercentPopulationInfected desc
+
+
